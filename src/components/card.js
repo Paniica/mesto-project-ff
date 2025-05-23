@@ -1,17 +1,12 @@
-import { handleImageClick } from './modal.js';
+// Импорты удалены — всё передаётся через параметры
 
-// Удаляет карточку из DOM
-export function deleteCard(cardElement) {
-  cardElement.remove();
-}
-
-// Переключает состояние кнопки лайка
-export function handleLikeButtonClick(evt) {
-  evt.target.classList.toggle("card__like-button_is-active");
-}
-
-// Создаёт и возвращает карточку с обработчиками
-export function createCard({ name, link }, cardTemplate) {
+export function createCard(
+  { name, link },
+  cardTemplate,
+  handleDeleteClick,
+  handleLikeClick,
+  handleImageClick
+) {
   const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
 
   const cardImage = cardElement.querySelector(".card__image");
@@ -23,8 +18,8 @@ export function createCard({ name, link }, cardTemplate) {
   cardImage.alt = name;
   cardTitle.textContent = name;
 
-  deleteButton.addEventListener("click", () => deleteCard(cardElement));
-  likeButton.addEventListener("click", handleLikeButtonClick);
+  deleteButton.addEventListener("click", () => handleDeleteClick(cardElement));
+  likeButton.addEventListener("click", handleLikeClick);
   cardImage.addEventListener("click", () => handleImageClick(name, link));
 
   return cardElement;
