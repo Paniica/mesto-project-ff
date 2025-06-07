@@ -1,11 +1,13 @@
-// Импорты удалены — всё передаётся через параметры
+// createCard.js — создание карточки с лайками и удалением без отдельного файла для лайков
+
+import { likeCard, unlikeCard, removeCard } from './api.js';
 
 export function createCard(
-  { name, link },
+  cardData,
   cardTemplate,
   handleDeleteClick,
-  handleLikeClick,
-  handleImageClick
+  handleImageClick,
+  currentUserId
 ) {
   const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
 
@@ -13,14 +15,46 @@ export function createCard(
   const cardTitle = cardElement.querySelector(".card__title");
   const deleteButton = cardElement.querySelector(".card__delete-button");
   const likeButton = cardElement.querySelector(".card__like-button");
+  const likeCount = cardElement.querySelector(".card__like-count");
 
-  cardImage.src = link;
-  cardImage.alt = name;
-  cardTitle.textContent = name;
+  cardImage.src = cardData.link;
+  cardImage.alt = cardData.name;
+  cardTitle.textContent = cardData.name;
+  likeCount.textContent = cardData.likes.length;
 
-  deleteButton.addEventListener("click", () => handleDeleteClick(cardElement));
-  likeButton.addEventListener("click", handleLikeClick);
-  cardImage.addEventListener("click", () => handleImageClick(name, link));
+  // Подсвечиваем, если пользователь уже лайкнул
+  if (cardData.likes.some(user => user._id === currentUserId)) {
+    likeButton.classList.add("card__like-button_is-active");
+  }
+
+  // Удаление только своей карточки
+  if (cardData.owner._id !== currentUserId) {
+    deleteButton.style.display = "none";
+  } else {
+    deleteButton.addEventListener("click", () => {
+      removeCard(cardData._id)
+        .then(() => cardElement.remove())
+        .catch(err => console.error("Ошибка удаления карточки:", err));
+    });
+  }
+
+  // Обработка лайка (встроена прямо здесь)
+  likeButton.addEventListener("click", () => {
+    const isLiked = likeButton.classList.contains("card__like-button_is-active");
+    const action = isLiked ? unlikeCard : likeCard;
+
+    action(cardData._id)
+      .then(updatedCard => {
+        likeCount.textContent = updatedCard.likes.length;
+        likeButton.classList.toggle("card__like-button_is-active");
+      })
+      .catch(err => console.error("Ошибка при лайке:", err));
+  });
+
+  // Открытие картинки
+  cardImage.addEventListener("click", () => {
+    handleImageClick(cardData.name, cardData.link);
+  });
 
   return cardElement;
 }

@@ -1,0 +1,13 @@
+.popup__error {
+  display: none;
+  color: red;
+  font-size: 12px;
+}
+
+.popup__error_visible {
+  display: block;
+}
+
+.form__input_type_error {
+  border-bottom: 2px solid red;
+}

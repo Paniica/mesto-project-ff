@@ -13,6 +13,16 @@
   transition: visibility 0s, background 0.3s;
   margin-top: 48px;
 }
+.button_inactive {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0);
+  color: rgba(0, 0, 0);
+  pointer-events: none;
+}
+
+.popup__button:disabled {
+  opacity: 0.5;
+}
 
 .popup__button:hover {
   background: rgba(0, 0, 0, 0.8);
