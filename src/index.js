@@ -2,10 +2,9 @@ import "./pages/index.css";
 import { createCard } from "./components/card.js";
 import { openModal, closeModal, enablePopupListeners } from "./components/modal.js";
 import { clearValidation, enableValidation } from "./components/validate.js";
-import { getUserInfo, getInitialCards } from "./components/api.js";
+import { getUserInfo, getInitialCards, addCard } from "./components/api.js";
 import './blocks/popup/__error/popup__error.css';
 
-// DOM
 const cardTemplate = document.querySelector("#card-template").content;
 const placesList = document.querySelector(".places__list");
 
@@ -27,6 +26,10 @@ const placeLinkInput = addCardForm.querySelector('input[name="link"]');
 const imagePopup = document.querySelector(".popup_type_image");
 const imagePopupImage = imagePopup.querySelector(".popup__image");
 const imagePopupCaption = imagePopup.querySelector(".popup__caption");
+
+const avatarPopup = document.querySelector(".popup_type_avatar");
+const avatarEditButton = document.querySelector(".profile__image-edit-button");
+const avatarForm = document.querySelector("form[name='avatar-update']");
 
 const validationConfig = {
   formSelector: ".popup__form",
@@ -57,27 +60,37 @@ function handleProfileFormSubmit(evt) {
 
 let currentUserId = null;
 
+function renderLoading(isLoading, button, text = "Сохранить") {
+  button.textContent = isLoading ? "Сохранение..." : text;
+}
+
 function handleAddCardSubmit(evt) {
   evt.preventDefault();
   const name = placeNameInput.value;
   const link = placeLinkInput.value;
-  const newCardData = {
-    name,
-    link,
-    likes: [],
-    owner: { _id: currentUserId },
-    _id: Math.random().toString(36).substr(2, 9) // временно для клиентской карточки
-  };
-  const newCard = createCard(
-    newCardData,
-    cardTemplate,
-    deleteCard,
-    handleImageClick,
-    currentUserId
-  );
-  placesList.prepend(newCard);
-  closeModal(addCardPopup);
-  addCardForm.reset();
+
+  const submitButton = evt.submitter;
+  renderLoading(true, submitButton, "Создать");
+
+  addCard(name, link)
+    .then(cardData => {
+      const newCard = createCard(
+        cardData,
+        cardTemplate,
+        deleteCard,
+        handleImageClick,
+        currentUserId
+      );
+      placesList.prepend(newCard);
+      closeModal(addCardPopup);
+      addCardForm.reset();
+    })
+    .catch(err => {
+      console.error("Ошибка при добавлении карточки:", err);
+    })
+    .finally(() => {
+      renderLoading(false, submitButton, "Создать");
+    });
 }
 
 editProfileForm.addEventListener("submit", handleProfileFormSubmit);
@@ -94,6 +107,12 @@ addButton.addEventListener("click", () => {
   addCardForm.reset();
   clearValidation(addCardForm, validationConfig);
   openModal(addCardPopup);
+});
+
+avatarEditButton.addEventListener("click", () => {
+  avatarForm.reset();
+  clearValidation(avatarForm, validationConfig);
+  openModal(avatarPopup);
 });
 
 enablePopupListeners();

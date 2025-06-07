@@ -1,4 +1,3 @@
-// createCard.js — создание карточки с лайками и удалением без отдельного файла для лайков
 
 import { likeCard, unlikeCard, removeCard } from './api.js';
 
